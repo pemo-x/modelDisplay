@@ -1,3 +1,4 @@
+import subprocess
 import sys
 
 # PySide6
@@ -16,6 +17,7 @@ import utils.dealData as dealData
 import os
 from UI.Main_ui import Ui_MainWindow
 from UI.glWidget import myGLWidget
+from initTask import initTaskWindow
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -25,25 +27,48 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """初始化主窗口，设置UI和连接信号与槽"""
         super(MainWindow, self).__init__()
         self.setupUi(self)
+        self.setWindowTitle("Sorfware")
 
-        self.action_OpenFile.triggered.connect(self.open_file_dialog)
-        self.action_OpenFolder.triggered.connect(self.open_folder_dialog)
+        self.initTreeView()
 
-        self.model = QFileSystemModel()
-        self.treeView.setModel(self.model)
-        self.treeView.setRootIndex(self.model.setRootPath(QDir.currentPath()))
-        self.treeView.doubleClicked.connect(self.treeViewOnDoubleClicked)
+        self.initMdiArea()
+
+        self.initListWidget()
+
+        self.initAction()
+
+        self.statusBar.showMessage("Ready")
+
+    def initListWidget(self):
+        self.listWidget.doubleClicked.connect(self.listWidgetOnDoubleClicked)
+
+    def initAction(self):
         self.action_Tile.triggered.connect(self.mdiArea.tileSubWindows)
         self.action_Cascade.triggered.connect(self.mdiArea.cascadeSubWindows)
         self.action_AllClose.triggered.connect(self.mdiArea.closeAllSubWindows)
-        self.statusBar.showMessage("Ready")
+        self.action_OpenFile.triggered.connect(self.open_file_dialog)
+        self.action_OpenFolder.triggered.connect(self.open_folder_dialog)
+        self.action_CreateTasks.triggered.connect(self.createtasksOnTriggered)
+
+    def initMdiArea(self):
         # 初始化OpenGL的窗口，避免闪屏
         GLWidget = myGLWidget()
         self.mdiArea.addSubWindow(GLWidget)
         GLWidget.show()
         self.mdiArea.closeAllSubWindows()
         self.mdiArea.subWindowActivated.connect(self.updatelistWidget)
-        self.listWidget.doubleClicked.connect(self.listWidgetOnDoubleClicked)
+
+    def initTreeView(self):
+        self.model = QFileSystemModel()
+        self.treeView.setModel(self.model)
+        self.treeView.setRootIndex(self.model.setRootPath(QDir.currentPath()))
+        self.treeView.doubleClicked.connect(self.treeViewOnDoubleClicked)
+
+    def createtasksOnTriggered(self):
+        self.inittaskWindow = initTaskWindow(
+            self.mdiArea.currentSubWindow().widget(), "gradcam"
+        )  # TODO 提供的算法待指定
+        self.inittaskWindow.show()
 
     def listWidgetOnDoubleClicked(self, index: QModelIndex):
         """处理列表项双击事件，打开对应的GL窗口"""

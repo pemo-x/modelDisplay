@@ -54,7 +54,7 @@ class LoginWindow(QWidget):
 
     def open_model_run_page(self):
         # 登录成功后跳转到模型演示页面
-        self.close()  # 关闭登录窗口
+        # self.close()  # 关闭登录窗口
         from main import MainWindow  # 导入主界面
 
         self.mainwindow = MainWindow()

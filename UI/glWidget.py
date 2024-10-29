@@ -10,12 +10,14 @@ from utils.dealData import getSamplesLength, getSampleDatas
 class myGLWidget(gl.GLViewWidget):
     def __init__(self, filePath=None, parent=None):
         super(myGLWidget, self).__init__(parent)
+
         self.datas = None
 
         self.filePath = filePath
         self.SamplesLength = getSamplesLength(self.filePath)
+        self.currentIndex = 0
         if self.SamplesLength is not None:
-            self.setDatas(index=0)
+            self.setDatas(index=self.currentIndex)
         self.setTimer()
 
     # 设置网格显示
@@ -34,6 +36,7 @@ class myGLWidget(gl.GLViewWidget):
 
     # 设置数据并更新图形
     def setDatas(self, index):
+        self.currentIndex = index
         self.clear()
         self.setGrid()
         datas = getSampleDatas(self.filePath, index)
@@ -73,9 +76,11 @@ class myGLWidget(gl.GLViewWidget):
                 )
                 self.lineItems.append(sp)
                 self.addItem(sp)
-
-        centerPOS = Vector(list(datas["points"][0][0]))
-        self.setCameraPosition(pos=centerPOS, distance=np.max(self.datas["points"]) * 2)
+        centerXYZ = np.mean(self.datas["points"], axis=0).mean(axis=0)
+        centerPOS = Vector(list(centerXYZ))
+        self.setCameraPosition(
+            pos=centerPOS, distance=np.max(self.datas["points"]) * 1.5
+        )
 
     # 设置定时器以更新数据
     def setTimer(self):
