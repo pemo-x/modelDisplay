@@ -6,15 +6,10 @@ from PySide6.QtWidgets import (
     QApplication,
     QFileDialog,
     QFileSystemModel,
-    QSplitter,
-    QTreeView,
-    QMdiArea,
+    QMdiSubWindow,
 )
-from PySide6.QtCore import QDir, QFileInfo
+from PySide6.QtCore import QDir, QFileInfo, QModelIndex
 
-# pyqtgraph
-import pyqtgraph as pg
-import pyqtgraph.opengl as gl
 
 # utils
 import utils.dealData as dealData
@@ -39,6 +34,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.action_Cascade.triggered.connect(self.mdiArea.cascadeSubWindows)
         self.action_AllClose.triggered.connect(self.mdiArea.closeAllSubWindows)
         self.statusBar.showMessage("Ready")
+        # 初始化OpenGL的窗口，避免闪屏
+        GLWidget = myGLWidget()
+        self.mdiArea.addSubWindow(GLWidget)
+        GLWidget.show()
+        self.mdiArea.closeAllSubWindows()
+        self.mdiArea.subWindowActivated.connect(self.updatelistWidget)
+        self.listWidget.doubleClicked.connect(self.listWidgetOnDoubleClicked)
+
+    def listWidgetOnDoubleClicked(self, index: QModelIndex):
+        subWindow = self.mdiArea.activeSubWindow()
+        if subWindow:
+            glWidget: myGLWidget = subWindow.widget()
+            glWidget.setDatas(index.row())
+
+    def updatelistWidget(self, subWindow: QMdiSubWindow):
+        self.listWidget.clear()
+        if subWindow:
+            length = subWindow.widget().SamplesLength
+            for i in range(length):
+                self.listWidget.addItem(f"{i}")
 
     def treeViewOnDoubleClicked(self, index):
         fileInfo: QFileInfo = self.model.fileInfo(index)
@@ -46,7 +61,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             filePath = fileInfo.absoluteFilePath()
             self.openFile(filePath)
 
-    def openFile(self, filePath):
+    def oldOpenFile(self, filePath):
         file_name = os.path.basename(filePath)
         file_suffix = os.path.splitext(file_name)[1]
         datas = None
@@ -62,14 +77,37 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # 如果发生了其他类型的异常，执行这里的代码
             self.statusBar.showMessage(f"发生错误：{e}")
             return 0
-        GLWidget = myGLWidget(datas)
-        self.mdiArea.addSubWindow(GLWidget)
-        self.mdiArea.subWindowList()[-1].setGeometry(100, 100, 300, 200)
-        # self.mdiArea.subWindowList()[-1].adjustSize()
-        # self.mdiArea.subWindowList()[-1].showMaximized()
-        self.mdiArea.subWindowList()[-1].show()
-        self.mdiArea.subWindowList()[-1].setWindowTitle(file_name)
-        # self.mdiArea.tileSubWindows()
+
+        if len(datas["points"].shape) == 3:
+            GLWidget = myGLWidget(datas)
+            self.mdiArea.addSubWindow(GLWidget)
+            GLWidget.show()
+            self.mdiArea.subWindowList()[-1].adjustSize()
+            self.mdiArea.subWindowList()[-1].setMinimumSize(400, 300)
+            self.mdiArea.subWindowList()[-1].setGeometry(
+                len(self.mdiArea.subWindowList()) * 20,
+                len(self.mdiArea.subWindowList()) * 20,
+                400,
+                300,
+            )
+            self.mdiArea.subWindowList()[-1].setWindowTitle(file_name)
+
+    def openFile(self, filePath):
+        file_name = os.path.basename(filePath)
+        file_suffix = os.path.splitext(file_name)[1]
+        if file_suffix == ".skeleton" or file_suffix == ".npy":
+            GLWidget = myGLWidget(filePath)
+            self.mdiArea.addSubWindow(GLWidget)
+            GLWidget.show()
+            self.mdiArea.subWindowList()[-1].adjustSize()
+            self.mdiArea.subWindowList()[-1].setMinimumSize(400, 300)
+            self.mdiArea.subWindowList()[-1].setGeometry(
+                len(self.mdiArea.subWindowList()) * 20,
+                len(self.mdiArea.subWindowList()) * 20,
+                400,
+                300,
+            )
+            self.mdiArea.subWindowList()[-1].setWindowTitle(file_name)
 
     def open_file_dialog(self):
         # 弹出文件选择对话框

@@ -17,9 +17,10 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
 from PySide6.QtWidgets import (QApplication, QDockWidget, QHBoxLayout, QHeaderView,
-    QLabel, QListView, QMainWindow, QMdiArea,
-    QMenu, QMenuBar, QSizePolicy, QStatusBar,
-    QToolBar, QTreeView, QVBoxLayout, QWidget)
+    QLabel, QListWidget, QListWidgetItem, QMainWindow,
+    QMdiArea, QMenu, QMenuBar, QSizePolicy,
+    QStatusBar, QToolBar, QTreeView, QVBoxLayout,
+    QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -34,8 +35,6 @@ class Ui_MainWindow(object):
         self.action_OpenFolder.setObjectName(u"action_OpenFolder")
         icon1 = QIcon(QIcon.fromTheme(u"folder-open"))
         self.action_OpenFolder.setIcon(icon1)
-        self.action_CloseFolder = QAction(MainWindow)
-        self.action_CloseFolder.setObjectName(u"action_CloseFolder")
         self.action_Tile = QAction(MainWindow)
         self.action_Tile.setObjectName(u"action_Tile")
         self.action_Tile.setMenuRole(QAction.MenuRole.NoRole)
@@ -109,10 +108,10 @@ class Ui_MainWindow(object):
         self.dockWidgetContents.setObjectName(u"dockWidgetContents")
         self.verticalLayout_3 = QVBoxLayout(self.dockWidgetContents)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.listView = QListView(self.dockWidgetContents)
-        self.listView.setObjectName(u"listView")
+        self.listWidget = QListWidget(self.dockWidgetContents)
+        self.listWidget.setObjectName(u"listWidget")
 
-        self.verticalLayout_3.addWidget(self.listView)
+        self.verticalLayout_3.addWidget(self.listWidget)
 
         self.dockWidget.setWidget(self.dockWidgetContents)
         MainWindow.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.dockWidget)
@@ -121,7 +120,6 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menut3.menuAction())
         self.menu.addAction(self.action_OpenFile)
         self.menu.addAction(self.action_OpenFolder)
-        self.menu.addAction(self.action_CloseFolder)
         self.toolBar.addAction(self.action_OpenFile)
         self.toolBar.addAction(self.action_OpenFolder)
         self.toolBar.addSeparator()
@@ -139,7 +137,6 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
         self.action_OpenFile.setText(QCoreApplication.translate("MainWindow", u"\u6253\u5f00\u6587\u4ef6", None))
         self.action_OpenFolder.setText(QCoreApplication.translate("MainWindow", u"\u6253\u5f00\u6587\u4ef6\u5939", None))
-        self.action_CloseFolder.setText(QCoreApplication.translate("MainWindow", u"\u5173\u95ed\u6587\u4ef6\u5939", None))
         self.action_Tile.setText(QCoreApplication.translate("MainWindow", u"\u5e73\u94fa\u7a97\u53e3", None))
         self.action_Cascade.setText(QCoreApplication.translate("MainWindow", u"\u5c42\u53e0\u7a97\u53e3", None))
 #if QT_CONFIG(tooltip)

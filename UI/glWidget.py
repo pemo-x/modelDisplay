@@ -3,15 +3,21 @@ from pyqtgraph.Vector import Vector
 from pyqtgraph.Qt import QtCore
 import numpy as np
 import random
+from utils.dealData import getSamplesLength, getSampleDatas
 
 
 class myGLWidget(gl.GLViewWidget):
-    def __init__(self, datas, parent=None):
+    def __init__(self, filePath=None, parent=None):
         super(myGLWidget, self).__init__(parent)
-        self.datas = datas
-        # g=gl.GLGridItem()
-        # self.addItem(g)
+        self.datas = None
 
+        self.filePath = filePath
+        self.SamplesLength = getSamplesLength(self.filePath)
+        if self.SamplesLength is not None:
+            self.setDatas(index=0)
+        self.setTimer()
+
+    def setGrid(self):
         gx = gl.GLGridItem()
         gx.rotate(90, 0, 1, 0)
         gx.translate(-10, 0, 0)
@@ -24,6 +30,13 @@ class myGLWidget(gl.GLViewWidget):
         gz.translate(0, 0, -10)
         self.addItem(gz)
 
+    def setDatas(self, index):
+        self.clear()
+        self.setGrid()
+        datas = getSampleDatas(self.filePath, index)
+        if datas is None:
+            return
+        self.datas = datas
         self.dataLen = self.datas["points"].shape[0]
         self.frame = 0
 
@@ -61,11 +74,14 @@ class myGLWidget(gl.GLViewWidget):
         centerPOS = Vector(list(datas["points"][0][0]))
         self.setCameraPosition(pos=centerPOS, distance=np.max(self.datas["points"]) * 2)
 
+    def setTimer(self):
         self.t = QtCore.QTimer(self)
         self.t.timeout.connect(self.dataUpdate)
         self.t.start(10)
 
     def dataUpdate(self):
+        if self.datas is None:
+            return
         self.frame = (self.frame + 1) % self.dataLen
         self.sp1.setData(pos=self.datas["points"][self.frame])
 

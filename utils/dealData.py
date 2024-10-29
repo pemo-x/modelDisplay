@@ -1,6 +1,7 @@
 import numpy as np
 import os
-from PySide6.QtCore import QFileInfo
+
+databasesName = ["ship_dataset.npy", "rechange_val_data_plane_Radar.npy"]
 
 
 def dealSkeleton(file):
@@ -123,7 +124,7 @@ def dealNpy(file):
         num_samples, XYZcoordinat, frames, num_points, _ = samples_array.shape
         # print(samples_array.shape)
         # 将 samples_array 转换为所需的形状 [frames, num_points, XYZcoordinate]
-        datas["points"] = samples_array[12, :, :, :, 0]
+        datas["points"] = samples_array[0, :, :, :, 0]
         datas["points"] = np.transpose(datas["points"], (1, 2, 0))
         # print(datas["points"].shape)
         # 获取经度和纬度的最大值和最小值
@@ -168,3 +169,96 @@ def dealNpy(file):
         real["lines"] = lines
 
         return real
+
+
+def getSamplesLength(file):
+    if file is None:
+        return None
+    if os.path.basename(file) == "ship_dataset.npy":
+        # 读取 ship_dataset.npy 文件
+        samples_array = np.load(file)
+
+        # 提取帧数、点数和坐标维度
+        num_samples, XYZcoordinat, frames, num_points, _ = samples_array.shape
+        return num_samples
+    elif os.path.basename(file) == "rechange_val_data_plane_Radar.npy":
+        # 读取 rechange_val_data_plane_Radar.npy 文件
+        num_samples = (np.load(file)).shape[0]
+        return num_samples
+    elif os.path.splitext(file)[1] == ".skeleton":
+        return 0
+    else:
+        return None
+
+
+def getSampleDatas(file, index):
+    if os.path.basename(file) == "ship_dataset.npy":
+        try:
+            # 读取 ship_dataset.npy 文件
+            samples_array = np.load(file)
+
+            # 初始化 datas 字典
+            datas = {"points": None, "lines": []}
+
+            # 提取帧数、点数和坐标维度
+            num_samples, XYZcoordinat, frames, num_points, _ = samples_array.shape
+            # print(samples_array.shape)
+            # 将 samples_array 转换为所需的形状 [frames, num_points, XYZcoordinate]
+            datas["points"] = samples_array[index, :, :, :, 0]
+            datas["points"] = np.transpose(datas["points"], (1, 2, 0))
+            # print(datas["points"].shape)
+            # 获取经度和纬度的最大值和最小值
+            longitudes = datas["points"][:, :, 0]
+            latitudes = datas["points"][:, :, 1]
+
+            min_longitude = longitudes.min()
+            max_longitude = longitudes.max()
+            min_latitude = latitudes.min()
+            max_latitude = latitudes.max()
+
+            # 对经纬度进行归一化
+            datas["points"][:, :, 0] = (longitudes - min_longitude) / (
+                max_longitude - min_longitude
+            )
+            datas["points"][:, :, 1] = (latitudes - min_latitude) / (
+                max_latitude - min_latitude
+            )
+
+            # 提取轨迹数据
+            for num_point in range(num_points):
+                # 提取当前帧的所有点
+                points = datas["points"][:, num_point, :]
+                datas["lines"].append(points)
+            return datas
+        except:
+            print("读取ship_dataset.npy失败！")
+
+    elif os.path.basename(file) == "rechange_val_data_plane_Radar.npy":
+        try:
+            # 读取 rechange_val_data_plane_Radar.npy 文件
+            real = {}
+            data = (np.load(file)[index])[0:3]
+            data = data.transpose(1, 2, 0, 3)
+            data = data.squeeze()
+            for i in range(3):
+                temp = np.max(data[:, :, i]) - np.min(data[:, :, i])
+                data[:, :, i] = (data[:, :, i] - np.min(data[:, :, i])) / temp * 5
+            # print(data.shape)
+            real["points"] = data
+            print(real["points"].shape)
+            line1 = data[:, 0, :]
+            line2 = data[:, 1, :]
+            lines = [line1, line2]
+            real["lines"] = lines
+
+            return real
+        except:
+            print("读取rechange_val_data_plane_Radar.npy失败！")
+
+    elif os.path.splitext(file)[1] == ".skeleton":  # Skeleton的骨架数据
+        try:
+            return dealSkeleton(file)
+        except:
+            print("读取skeleton文件失败！")
+    # 可正常读取的方法全部失败，返回None
+    return None

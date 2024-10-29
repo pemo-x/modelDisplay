@@ -54,7 +54,6 @@
     </property>
     <addaction name="action_OpenFile"/>
     <addaction name="action_OpenFolder"/>
-    <addaction name="action_CloseFolder"/>
    </widget>
    <widget class="QMenu" name="menut3">
     <property name="title">
@@ -131,7 +130,7 @@
    <widget class="QWidget" name="dockWidgetContents">
     <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
-      <widget class="QListView" name="listView"/>
+      <widget class="QListWidget" name="listWidget"/>
      </item>
     </layout>
    </widget>
@@ -150,11 +149,6 @@
    </property>
    <property name="text">
     <string>打开文件夹</string>
-   </property>
-  </action>
-  <action name="action_CloseFolder">
-   <property name="text">
-    <string>关闭文件夹</string>
    </property>
   </action>
   <action name="action_Tile">
