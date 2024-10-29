@@ -245,7 +245,7 @@ def getSampleDatas(file, index):
                 data[:, :, i] = (data[:, :, i] - np.min(data[:, :, i])) / temp * 5
             # print(data.shape)
             real["points"] = data
-            print(real["points"].shape)
+            # print(real["points"].shape)
             line1 = data[:, 0, :]
             line2 = data[:, 1, :]
             lines = [line1, line2]
