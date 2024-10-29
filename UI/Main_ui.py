@@ -17,10 +17,9 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
 from PySide6.QtWidgets import (QApplication, QDockWidget, QHBoxLayout, QHeaderView,
-    QLabel, QListWidget, QListWidgetItem, QMainWindow,
-    QMdiArea, QMenu, QMenuBar, QSizePolicy,
-    QStatusBar, QToolBar, QTreeView, QVBoxLayout,
-    QWidget)
+    QListWidget, QListWidgetItem, QMainWindow, QMdiArea,
+    QMenu, QMenuBar, QSizePolicy, QStatusBar,
+    QToolBar, QTreeView, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -83,19 +82,6 @@ class Ui_MainWindow(object):
 
         self.dockWidget_2.setWidget(self.dockWidgetContents_2)
         MainWindow.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.dockWidget_2)
-        self.dockWidget_3 = QDockWidget(MainWindow)
-        self.dockWidget_3.setObjectName(u"dockWidget_3")
-        self.dockWidgetContents_3 = QWidget()
-        self.dockWidgetContents_3.setObjectName(u"dockWidgetContents_3")
-        self.verticalLayout_2 = QVBoxLayout(self.dockWidgetContents_3)
-        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.label = QLabel(self.dockWidgetContents_3)
-        self.label.setObjectName(u"label")
-
-        self.verticalLayout_2.addWidget(self.label)
-
-        self.dockWidget_3.setWidget(self.dockWidgetContents_3)
-        MainWindow.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.dockWidget_3)
         self.toolBar = QToolBar(MainWindow)
         self.toolBar.setObjectName(u"toolBar")
         MainWindow.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.toolBar)
@@ -153,8 +139,6 @@ class Ui_MainWindow(object):
         self.menu.setTitle(QCoreApplication.translate("MainWindow", u"\u6587\u4ef6", None))
         self.menut3.setTitle(QCoreApplication.translate("MainWindow", u"\u5e2e\u52a9", None))
         self.dockWidget_2.setWindowTitle(QCoreApplication.translate("MainWindow", u"\u8d44\u6e90\u7ba1\u7406\u5668", None))
-        self.dockWidget_3.setWindowTitle(QCoreApplication.translate("MainWindow", u"\u8f93\u51fa", None))
-        self.label.setText(QCoreApplication.translate("MainWindow", u"\u8f93\u51fa\u7ed3\u679c", None))
         self.toolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"toolBar", None))
         self.dockWidget.setWindowTitle(QCoreApplication.translate("MainWindow", u"\u6570\u636e\u5bf9\u8c61\u7ba1\u7406\u5668", None))
     # retranslateUi

@@ -97,6 +97,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         file_suffix = os.path.splitext(file_name)[1]
         if file_suffix == ".skeleton" or file_suffix == ".npy":
             GLWidget = myGLWidget(filePath)
+            # 把mdiArea当前窗口取消最大化
+            currentSubWindow = self.mdiArea.currentSubWindow()
+            if currentSubWindow:
+                currentSubWindow.showNormal()
             self.mdiArea.addSubWindow(GLWidget)
             GLWidget.show()
             self.mdiArea.subWindowList()[-1].adjustSize()
