@@ -238,6 +238,6 @@ class Ui_MainWindow(object):
         self.menu_2.setTitle(QCoreApplication.translate("MainWindow", u"\u7a97\u53e3", None))
         self.dockWidget_ResourceManager.setWindowTitle(QCoreApplication.translate("MainWindow", u"\u8d44\u6e90\u7ba1\u7406\u5668", None))
         self.toolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"toolBar", None))
-        self.dockWidget_ObjectManager.setWindowTitle(QCoreApplication.translate("MainWindow", u"\u6570\u636e\u5bf9\u8c61\u7ba1\u7406\u5668", None))
+        self.dockWidget_ObjectManager.setWindowTitle(QCoreApplication.translate("MainWindow", u"\u6837\u672c\u7ba1\u7406\u5668", None))
     # retranslateUi
 

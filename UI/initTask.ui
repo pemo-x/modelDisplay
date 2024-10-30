@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>280</width>
-    <height>208</height>
+    <width>296</width>
+    <height>236</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2">
+  <layout class="QHBoxLayout" name="horizontalLayout_6">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
@@ -33,7 +33,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label_6">
+        <widget class="QLabel" name="label_Sample">
          <property name="text">
           <string>选择样本：</string>
          </property>
@@ -43,7 +43,11 @@
         </widget>
        </item>
        <item>
-        <widget class="QSpinBox" name="sample_spinBox"/>
+        <widget class="QSpinBox" name="sample_spinBox">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
@@ -66,7 +70,7 @@
        <item>
         <widget class="QRadioButton" name="radioButton">
          <property name="text">
-          <string>stgcn</string>
+          <string>ST-GCN</string>
          </property>
          <property name="checked">
           <bool>true</bool>
@@ -135,6 +139,25 @@
       <widget class="QPushButton" name="pushButton_StartRun">
        <property name="text">
         <string>开始运行</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QProgressBar" name="progressBar">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="maximum">
+        <number>0</number>
+       </property>
+       <property name="value">
+        <number>0</number>
+       </property>
+       <property name="textVisible">
+        <bool>false</bool>
+       </property>
+       <property name="invertedAppearance">
+        <bool>false</bool>
        </property>
       </widget>
      </item>

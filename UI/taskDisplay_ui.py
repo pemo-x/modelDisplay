@@ -15,9 +15,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QDockWidget, QHeaderView, QMdiArea,
-    QSizePolicy, QTableWidget, QTableWidgetItem, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QApplication, QMdiArea, QSizePolicy, QTextBrowser,
+    QVBoxLayout, QWidget)
 
 class Ui_Form(object):
     def setupUi(self, Form):
@@ -26,30 +25,22 @@ class Ui_Form(object):
         Form.resize(893, 632)
         self.verticalLayout_2 = QVBoxLayout(Form)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.verticalLayout = QVBoxLayout()
+        self.verticalLayout.setObjectName(u"verticalLayout")
         self.mdiArea = QMdiArea(Form)
         self.mdiArea.setObjectName(u"mdiArea")
 
-        self.verticalLayout_2.addWidget(self.mdiArea)
+        self.verticalLayout.addWidget(self.mdiArea)
 
-        self.dockWidget = QDockWidget(Form)
-        self.dockWidget.setObjectName(u"dockWidget")
-        self.dockWidget.setFloating(False)
-        self.dockWidgetContents = QWidget()
-        self.dockWidgetContents.setObjectName(u"dockWidgetContents")
-        self.verticalLayout = QVBoxLayout(self.dockWidgetContents)
-        self.verticalLayout.setObjectName(u"verticalLayout")
-        self.tableWidget = QTableWidget(self.dockWidgetContents)
-        if (self.tableWidget.rowCount() < 1):
-            self.tableWidget.setRowCount(1)
-        __qtablewidgetitem = QTableWidgetItem()
-        self.tableWidget.setVerticalHeaderItem(0, __qtablewidgetitem)
-        self.tableWidget.setObjectName(u"tableWidget")
+        self.textBrowser = QTextBrowser(Form)
+        self.textBrowser.setObjectName(u"textBrowser")
 
-        self.verticalLayout.addWidget(self.tableWidget)
+        self.verticalLayout.addWidget(self.textBrowser)
 
-        self.dockWidget.setWidget(self.dockWidgetContents)
+        self.verticalLayout.setStretch(0, 10)
+        self.verticalLayout.setStretch(1, 1)
 
-        self.verticalLayout_2.addWidget(self.dockWidget)
+        self.verticalLayout_2.addLayout(self.verticalLayout)
 
 
         self.retranslateUi(Form)
@@ -59,7 +50,5 @@ class Ui_Form(object):
 
     def retranslateUi(self, Form):
         Form.setWindowTitle(QCoreApplication.translate("Form", u"Form", None))
-        ___qtablewidgetitem = self.tableWidget.verticalHeaderItem(0)
-        ___qtablewidgetitem.setText(QCoreApplication.translate("Form", u"VALUE", None));
     # retranslateUi
 

@@ -159,7 +159,7 @@ def dealNpy(file):
         data = data.squeeze()
         for i in range(3):
             temp = np.max(data[:, :, i]) - np.min(data[:, :, i])
-            data[:, :, i] = (data[:, :, i] - np.min(data[:, :, i])) / temp * 5
+            data[:, :, i] = (data[:, :, i] - np.min(data[:, :, i])) / temp * 3
         # print(data.shape)
         real["points"] = data
         print(real["points"].shape)
@@ -171,31 +171,35 @@ def dealNpy(file):
         return real
 
 
-def getSamplesLength(file):
-    if file is None:
+def getSamplesLength(filePath):
+    if filePath is None:
         return None
-    if os.path.basename(file) == "ship_dataset.npy":
+    if os.path.basename(filePath) == "ship_dataset.npy":
         # 读取 ship_dataset.npy 文件
-        samples_array = np.load(file)
+        samples_array = np.load(filePath)
 
         # 提取帧数、点数和坐标维度
         num_samples, XYZcoordinat, frames, num_points, _ = samples_array.shape
         return num_samples
-    elif os.path.basename(file) == "rechange_val_data_plane_Radar.npy":
+    elif os.path.basename(filePath) == "rechange_val_data_plane_Radar.npy":
         # 读取 rechange_val_data_plane_Radar.npy 文件
-        num_samples = (np.load(file)).shape[0]
+        num_samples = (np.load(filePath)).shape[0]
         return num_samples
-    elif os.path.splitext(file)[1] == ".skeleton":
+    elif os.path.basename(filePath) == "five_planes.npy":
+        # 读取 five_planes.npy 文件
+        num_samples = (np.load(filePath)).shape[0]
+        return num_samples
+    elif os.path.splitext(filePath)[1] == ".skeleton":
         return 0
     else:
         return None
 
 
-def getSampleDatas(file, index):
-    if os.path.basename(file) == "ship_dataset.npy":
+def getSampleDatas(datasetPath, index):
+    if os.path.basename(datasetPath) == "ship_dataset.npy":
         try:
             # 读取 ship_dataset.npy 文件
-            samples_array = np.load(file)
+            samples_array = np.load(datasetPath)
 
             # 初始化 datas 字典
             datas = {"points": None, "lines": []}
@@ -233,32 +237,58 @@ def getSampleDatas(file, index):
         except:
             print("读取ship_dataset.npy失败！")
 
-    elif os.path.basename(file) == "rechange_val_data_plane_Radar.npy":
+    elif os.path.basename(datasetPath) == "rechange_val_data_plane_Radar.npy":
         try:
             # 读取 rechange_val_data_plane_Radar.npy 文件
             real = {}
-            data = (np.load(file)[index])[0:3]
+            data = (np.load(datasetPath)[index])[0:3]
             data = data.transpose(1, 2, 0, 3)
             data = data.squeeze()
+            data = data[(np.sum(data != 0, axis=2)) == 3].reshape(-1, 2, 3)
             for i in range(3):
                 temp = np.max(data[:, :, i]) - np.min(data[:, :, i])
-                data[:, :, i] = (data[:, :, i] - np.min(data[:, :, i])) / temp * 5
+                data[:, :, i] = (data[:, :, i] - np.min(data[:, :, i])) / temp * 2
             # print(data.shape)
             real["points"] = data
             # print(real["points"].shape)
-            line1 = data[:, 0, :]
-            line2 = data[:, 1, :]
-            lines = [line1, line2]
+            lines = []
+            for n in range(data.shape[1]):
+                lines.append(data[:, n, :])
             real["lines"] = lines
 
             return real
         except:
             print("读取rechange_val_data_plane_Radar.npy失败！")
 
-    elif os.path.splitext(file)[1] == ".skeleton":  # Skeleton的骨架数据
+    elif os.path.basename(datasetPath) == "five_planes.npy":
         try:
-            return dealSkeleton(file)
+            # 读取 five_planes.npy 文件
+            real = {}
+            data = np.load(datasetPath)[index]
+            data = data.transpose(1, 2, 0, 3)
+            data = data.squeeze()
+            for i in range(3):
+                temp = np.max(data[:, :, i]) - np.min(data[:, :, i])
+                data[:, :, i] = (data[:, :, i] - np.min(data[:, :, i])) / temp * 2
+            # print(data.shape)
+            real["points"] = data
+            # print(real["points"].shape)
+            lines = []
+            for n in range(data.shape[1]):
+                lines.append(data[:, n, :])
+            real["lines"] = lines
+
+            return real
+        except:
+            print("读取five_planes.npy失败！")
+    elif os.path.splitext(datasetPath)[1] == ".skeleton":  # Skeleton的骨架数据
+        try:
+            return dealSkeleton(datasetPath)
         except:
             print("读取skeleton文件失败！")
     # 可正常读取的方法全部失败，返回None
     return None
+
+
+if __name__ == "__main__":
+    datas = getSampleDatas(".//datas//rechange_val_data_plane_Radar.npy", 5)

@@ -1,4 +1,3 @@
-import subprocess
 import sys
 
 # PySide6
@@ -13,11 +12,12 @@ from PySide6.QtCore import QDir, QFileInfo, QModelIndex
 
 
 # utils
-import utils.dealData as dealData
 import os
 from UI.Main_ui import Ui_MainWindow
-from UI.glWidget import myGLWidget
-from initTask import initTaskWindow
+from glWidget import myGLWidget
+from taskWindow import taskWindow
+from utils.debug import message
+from utils.task import Task
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -26,6 +26,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         """初始化主窗口，设置UI和连接信号与槽"""
         super(MainWindow, self).__init__()
+
         self.setupUi(self)
         self.setWindowTitle("Sorfware")
 
@@ -36,8 +37,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.initListWidget()
 
         self.initAction()
-
+        self.initTabWidget()
         self.statusBar.showMessage("Ready")
+
+    def initTabWidget(self):
+        self.tabWidget.tabCloseRequested.connect(self.tabWidgetOnCloseRequested)
+
+    def tabWidgetOnCloseRequested(self, index):
+        if index != 0:
+            self.tabWidget.removeTab(index)
 
     def initListWidget(self):
         self.listWidget.doubleClicked.connect(self.listWidgetOnDoubleClicked)
@@ -52,7 +60,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def initMdiArea(self):
         # 初始化OpenGL的窗口，避免闪屏
-        GLWidget = myGLWidget()
+        GLWidget = myGLWidget(Task())
         self.mdiArea.addSubWindow(GLWidget)
         GLWidget.show()
         self.mdiArea.closeAllSubWindows()
@@ -65,10 +73,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.treeView.doubleClicked.connect(self.treeViewOnDoubleClicked)
 
     def createtasksOnTriggered(self):
-        self.inittaskWindow = initTaskWindow(
-            self.mdiArea.currentSubWindow().widget(), "gradcam"
-        )  # TODO 提供的算法待指定
-        self.inittaskWindow.show()
+        inittaskWindow = taskWindow(
+            self.mdiArea.currentSubWindow().widget().task, parent=self
+        )
+        self.tabWidget.addTab(inittaskWindow, "任务")
+
+        self.tabWidget.setCurrentIndex(self.tabWidget.count() - 1)
 
     def listWidgetOnDoubleClicked(self, index: QModelIndex):
         """处理列表项双击事件，打开对应的GL窗口"""
@@ -76,14 +86,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if subWindow:
             glWidget: myGLWidget = subWindow.widget()
             glWidget.setDatas(index.row())
+            subWindow.setWindowTitle(
+                glWidget.task.datasetName + "--样本" + str(glWidget.task.datasetIndex)
+            )
 
     def updatelistWidget(self, subWindow: QMdiSubWindow):
         """更新列表窗口，根据激活的子窗口的样本数量填充列表"""
         self.listWidget.clear()
         if subWindow:
-            length = subWindow.widget().SamplesLength
+            length = subWindow.widget().task.samplesLength
             for i in range(length):
-                self.listWidget.addItem(f"{i}")
+                self.listWidget.addItem(f"样本{i}")
 
     def treeViewOnDoubleClicked(self, index):
         """处理树形视图双击事件，打开选中的文件"""
@@ -92,44 +105,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             filePath = fileInfo.absoluteFilePath()
             self.openFile(filePath)
 
-    def oldOpenFile(self, filePath):
-        """处理旧格式文件的打开逻辑，支持.skeleton和.npy格式"""
-        file_name = os.path.basename(filePath)
-        file_suffix = os.path.splitext(file_name)[1]
-        datas = None
-        try:
-            if file_suffix == ".skeleton":
-                datas = dealData.dealSkeleton(filePath)
-            elif file_suffix == ".npy":
-                datas = dealData.dealNpy(filePath)
-            else:
-                self.statusBar.showMessage("不支持打开的文件")
-                return 0
-        except Exception as e:
-            # 如果发生了其他类型的异常，执行这里的代码
-            self.statusBar.showMessage(f"发生错误：{e}")
-            return 0
-
-        if len(datas["points"].shape) == 3:
-            GLWidget = myGLWidget(datas)
-            self.mdiArea.addSubWindow(GLWidget)
-            GLWidget.show()
-            self.mdiArea.subWindowList()[-1].adjustSize()
-            self.mdiArea.subWindowList()[-1].setMinimumSize(400, 300)
-            self.mdiArea.subWindowList()[-1].setGeometry(
-                len(self.mdiArea.subWindowList()) * 20,
-                len(self.mdiArea.subWindowList()) * 20,
-                400,
-                300,
-            )
-            self.mdiArea.subWindowList()[-1].setWindowTitle(file_name)
-
     def openFile(self, filePath):
         """打开选定的文件，创建GL窗口并显示"""
         file_name = os.path.basename(filePath)
         file_suffix = os.path.splitext(file_name)[1]
         if file_suffix == ".skeleton" or file_suffix == ".npy":
-            GLWidget = myGLWidget(filePath)
+            newTask = Task()
+            newTask.datasetPath = filePath
+            newTask.datasetName = file_name
+            newTask.datasetSuffix = file_suffix
+            newTask.datasetIndex = 0
+            GLWidget = myGLWidget(task=newTask, parent=self.mdiArea)
             # 把mdiArea当前窗口取消最大化
             currentSubWindow = self.mdiArea.currentSubWindow()
             if currentSubWindow:
@@ -144,7 +130,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 400,
                 300,
             )
-            self.mdiArea.subWindowList()[-1].setWindowTitle(file_name)
+            self.mdiArea.subWindowList()[-1].setWindowTitle(
+                file_name + "--样本" + str(GLWidget.task.datasetIndex)
+            )
+            self.tabWidget.setCurrentIndex(0)
 
     def open_file_dialog(self):
         """弹出文件选择对话框，选择文件并打开"""

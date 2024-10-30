@@ -4,20 +4,21 @@ from pyqtgraph.Qt import QtCore
 import numpy as np
 import random
 from utils.dealData import getSamplesLength, getSampleDatas
+from utils.debug import message
+from utils.task import Task
 
 
 # 自定义OpenGL窗口类，用于展示3D图形
 class myGLWidget(gl.GLViewWidget):
-    def __init__(self, filePath=None, parent=None):
-        super(myGLWidget, self).__init__(parent)
-
+    def __init__(self, task: Task, parent=None):
+        super(myGLWidget, self).__init__(parent=parent)
+        self.parent = parent
+        self.task = task
         self.datas = None
 
-        self.filePath = filePath
-        self.SamplesLength = getSamplesLength(self.filePath)
-        self.currentIndex = 0
-        if self.SamplesLength is not None:
-            self.setDatas(index=self.currentIndex)
+        self.task.samplesLength = getSamplesLength(self.task.datasetPath)
+        if self.task.samplesLength is not None:
+            self.setDatas(index=self.task.datasetIndex)
         self.setTimer()
 
     # 设置网格显示
@@ -36,20 +37,20 @@ class myGLWidget(gl.GLViewWidget):
 
     # 设置数据并更新图形
     def setDatas(self, index):
-        self.currentIndex = index
+        self.task.datasetIndex = index
         self.clear()
         self.setGrid()
-        datas = getSampleDatas(self.filePath, index)
+        datas = getSampleDatas(self.task.datasetPath, self.task.datasetIndex)
         if datas is None:
             return
         self.datas = datas
-        self.dataLen = self.datas["points"].shape[0]
-        self.frame = 0
+        self.frameLen = self.datas["points"].shape[0]
+        self.currentFrame = 0
 
         self.sp1 = gl.GLScatterPlotItem(
-            pos=self.datas["points"][self.frame],
+            pos=self.datas["points"][self.currentFrame],
             size=0.05,
-            color=(1.0, 1.0, 1.0, 0.5),
+            color=(1.0, 1.0, 1.0, 1.0),
             pxMode=False,
         )
         self.addItem(self.sp1)
@@ -70,16 +71,29 @@ class myGLWidget(gl.GLViewWidget):
                         color[i] += random.randint(0, 1) * 0.2 + 0.3
                 color[3] = 1.0
                 sp = gl.GLLinePlotItem(
-                    pos=line[max(0, self.frame - self.dataLen // 10) : self.frame],
+                    pos=line[
+                        max(
+                            0, self.currentFrame - self.frameLen // 10
+                        ) : self.currentFrame
+                    ],
                     color=color,
                     width=2,
                 )
                 self.lineItems.append(sp)
                 self.addItem(sp)
-        centerXYZ = np.mean(self.datas["points"], axis=0).mean(axis=0)
+        centerXYZ = np.mean(self.datas["points"], axis=1).mean(axis=0)
         centerPOS = Vector(list(centerXYZ))
+        # 计算 a 中每个点与 b 之间的绝对差值
+        abs_diff = np.abs(self.datas["points"] - centerXYZ)
+
+        # 找到每个点的最大间距
+        max_distances = np.max(abs_diff, axis=2)
+
+        # 找到所有点中的最大间距
+        max_spacing = np.max(max_distances)
         self.setCameraPosition(
-            pos=centerPOS, distance=np.max(self.datas["points"]) * 1.5
+            pos=centerPOS,
+            distance=max_spacing * 3,
         )
 
     # 设置定时器以更新数据
@@ -92,8 +106,8 @@ class myGLWidget(gl.GLViewWidget):
     def dataUpdate(self):
         if self.datas is None:
             return
-        self.frame = (self.frame + 1) % self.dataLen
-        self.sp1.setData(pos=self.datas["points"][self.frame])
+        self.currentFrame = (self.currentFrame + 1) % self.frameLen
+        self.sp1.setData(pos=self.datas["points"][self.currentFrame])
 
         for linkIndex in range(len(self.linkItems)):
             linkRule = (
@@ -101,11 +115,14 @@ class myGLWidget(gl.GLViewWidget):
                 self.datas["links"][linkIndex][1],
             )
             self.linkItems[linkIndex].setData(
-                pos=self.datas["points"][self.frame][[linkRule[0], linkRule[1]]]
+                pos=self.datas["points"][self.currentFrame][[linkRule[0], linkRule[1]]]
             )
 
         for lineIndex in range(len(self.lineItems)):
             line = self.datas["lines"][lineIndex]
-            self.lineItems[lineIndex].setData(
-                pos=line[max(0, self.frame - self.dataLen // 10) : self.frame]
-            )
+            # self.lineItems[lineIndex].setData(
+            #     pos=line[
+            #         max(0, self.currentFrame - self.frameLen // 2) : self.currentFrame
+            #     ]
+            # )
+            self.lineItems[lineIndex].setData(pos=line[: self.currentFrame])

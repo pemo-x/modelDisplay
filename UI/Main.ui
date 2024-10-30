@@ -158,7 +158,7 @@
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QDockWidget" name="dockWidget_ObjectManager">
    <property name="windowTitle">
-    <string>数据对象管理器</string>
+    <string>样本管理器</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
